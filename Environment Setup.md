@@ -1,10 +1,27 @@
 # Environment setup
 This is a small single-domain Active Directory (AD) environment build using VMware and pfSense. Currently, it's a simple setup, but  it can be expanded in the future to make a more complex environment. This runs on its own network, with DHCP and DNS managed by the domain controller. Most of the configuration is done using PowerShell, specifically PowerShell Core, both as a way to practice scripting and to enable efficient deployment of the environment.
 
-## Networking
-*(Coming soon)*
-
 ## Domain controller
+Here we will install Active Directory Domain Services (AD DS) on our Windows Server, assigning it the role of Domain Controller for this domain. We will also install the DNS and DHCP services before creating our Active Directory forest.
+
+```powershell
+# Run as administrator
+Install-WindowsFeature AD-Domain-Services, DHCP, DNS -IncludeManagementTools
+
+$Password = Read-Host -Prompt 'Create admin password' -AsSecureString
+Set-LocalUser -Password $Password Administrator
+$Params = @{
+    DomainName                    = 'dev.local'
+    DomainMode                    = 'WinThreshold'
+    ForestMode                    = 'WinThreshold'
+    InstallDns                    = $true
+    SafeModeAdministratorPassword = $Password
+    Force                         = $true
+}
+Install-ADDSForest @Params
+```
+
+## Networking
 *(Coming soon)*
 
 ## Organizational Units (OUs)
@@ -39,7 +56,7 @@ Dev.local
 │   
 └── Servers
 ```
-Lets make som OU's based on the tree structure above. 
+Lets make some OU's based on the tree structure above. 
 ```powershell
 # Variables 
 $pathmgt      =   'OU=AllUsers,DC=dev,DC=local'
