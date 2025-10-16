@@ -22,7 +22,23 @@ Install-ADDSForest @Params
 ```
 
 ## Networking
+Now we will configure the network settings. Remember to adjust the address space to match the network configuration of your router.
+
+```powershell
+Get-NetIPConfiguration
+# Find the 'InterfaceIndex' value and add it to the '$Index' variable
+$Index = '<InterfaceIndex>'
+$DefaultGateway = '192.168.2.1'
+$DCIP = '192.168.2.2'
+
+New-NetIPAddress -InterfaceIndex $Index -IPAddress $DCIP -PrefixLength 24 -DefaultGateway $DefaultGateway
+Set-DnsClientServerAddress -InterfaceIndex 4 -ServerAddresses $DCIP, $DefaultGateway
+```
+
+If done correctly, we should be able to ping 'google.com', indicating that we have internet connectivity and that DNS resolution is functioning correctly.
+
 *(Coming soon)*
+- DHCP configurations
 
 ## Organizational Units (OUs)
 When new users and computers are added in Active Directory, they are placed in the default **Users** and **Computers** containers, unless specified otherwise. Since these default containers cannot have **Group Policy Objects (GPOs)** linked to them, they are considered less secure. To address this, users and computers should be placed in **Organizational Units (OUs)** instead.
