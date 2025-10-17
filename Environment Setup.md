@@ -1,6 +1,19 @@
 # Environment setup
 This is a small single-domain Active Directory (AD) environment build using VMware and pfSense. Currently, it's a simple setup, but  it can be expanded in the future to make a more complex environment. This runs on its own network, with DHCP and DNS managed by the domain controller. Most of the configuration is done using PowerShell, specifically PowerShell Core, both as a way to practice scripting and to enable efficient deployment of the environment.
 
+![Active Directory Topology](docs/environment_diagram.pdf)
+
+The virtual environment will host the following machines:
+
+| Role               | Hostname | OS                  | IP Address  | Description                                          |
+| ------------------ | -------- | ------------------- | ----------- | ---------------------------------------------------- |
+| Domain Controller  | DC1      | Windows Server 2022 | 192.168.2.2 | Hosts Active Directory Domain Services, DNS and DHCP |
+| Client Workstation | CL1      | Windows 10 Pro      | (DHCP)      | Joined to the AD domain                              |
+
+My environment was created using VMware Workstation. Internet connectivity is established through a bridged connection to a pfSense router.
+
+![Bridged networking in VMware](vmware_bridge.png)
+
 ## Domain controller
 Here we will install Active Directory Domain Services (AD DS) on our Windows Server, assigning it the role of Domain Controller for this domain. We will also install the DNS and DHCP services before creating our Active Directory forest.
 
