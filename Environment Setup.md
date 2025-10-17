@@ -155,3 +155,7 @@ foreach($user in $Users) {
 ```
 ## Computers
 *(Coming soon)*
+
+## Know Issues and Future Plans
+- Add Manager VM and set up remoting.
+- Create file share and do AGDLP access control
