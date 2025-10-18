@@ -1,3 +1,5 @@
+[[_TOC_]]
+
 # Environment setup
 This is a small single-domain Active Directory (AD) environment build using VMware and pfSense. Currently, it's a simple setup, but  it can be expanded in the future to make a more complex environment. This runs on its own network, with DHCP and DNS managed by the domain controller. Most of the configuration is done using PowerShell, specifically PowerShell Core, both as a way to practice scripting and to enable efficient deployment of the environment.
 
