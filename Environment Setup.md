@@ -53,6 +53,19 @@ If done correctly, we should be able to ping 'google.com', indicating that we ha
 *(Coming soon)*
 - DHCP configurations
 
+## PowerShell Core
+Now that we have internet connectivity we will install **PowerShell Core**.
+
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force
+[System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+choco install -y powershell-core
+exit
+```
+
+All remaining PowerShell commands should be run on this version, unless specified otherwise.
+
 ## Organizational Units (OUs)
 When new users and computers are added in Active Directory, they are placed in the default **Users** and **Computers** containers, unless specified otherwise. Since these default containers cannot have **Group Policy Objects (GPOs)** linked to them, they are considered less secure. To address this, users and computers should be placed in **Organizational Units (OUs)** instead.
 
