@@ -19,6 +19,7 @@ Here we will install Active Directory Domain Services (AD DS) on our Windows Ser
 
 ```powershell
 # Run as administrator
+Rename-Computer -NewName "DC1" -Force -PassThru
 Install-WindowsFeature AD-Domain-Services, DHCP, DNS -IncludeManagementTools
 
 $Password = Read-Host -Prompt 'Create admin password' -AsSecureString
