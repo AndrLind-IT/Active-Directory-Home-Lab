@@ -146,7 +146,11 @@ The following will add some users from a cvs file.
 The csv file
 
 ```powershell
-#Variables
+# CSV file
+choco install curl
+curl -OL https://github.com/Andy-Lindstoel/Active-Directory-Home-Lab/raw/refs/heads/main/docs/AD_users.csv
+
+# Variables
 $Users = Import-Csv AD_users.csv -Delimiter ';'
 $DomainName = 'dev.local'
 $Passwords = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPRSTUVWXYZ0123456789~!@#$%^&*()-_=+[{]}\|;:<.>/?'
