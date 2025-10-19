@@ -147,10 +147,9 @@ New-ADOrganizationalUnit 'Servers ' -Description 'Contains OUs and servers'
 ```
 
 ## Users
-The following will add some users from a cvs file.
+The following will add some users from a cvs file. This file was made manually using some common first- and last names, and assigning them to some departments and OUs. For that reason the amount of users is rather small. In the future I might add a larger and more complex csv file.
 
-*(Coming soon)*
-The csv file
+These users will also be assigned a complex password that's generated on user creation.
 
 ```powershell
 # CSV file
@@ -172,7 +171,7 @@ foreach($user in $Users) {
 		-UserPrincipalName ($user.GivenName.ToLower() + '.' + $user.Surname.ToLower() + '@' + $DomainName) `
 		-Department        $user.Department `
 		-Path              $user.Pathname `		
-		-AccountPassword           (ConvertTo-SecureString (-join ($Passwords.ToCharArray() | Get-Random -Count 12)) -AsPlainText -Force)`
+		-AccountPassword   (ConvertTo-SecureString (-join ($Passwords.ToCharArray() | Get-Random -Count 12)) -AsPlainText -Force)`
 		-Enabled           $True `
 		-ChangePasswordAtLogon $True
 }
@@ -180,7 +179,6 @@ foreach($user in $Users) {
 
 We can now locate these users and their respective OUs in the Server Manager, unders 'Tools' -> 'Active Directory Users and Computers'.
 ![Users and Computers](./docs/users.png)
-
 
 ## Computers
 *(Coming soon)*
