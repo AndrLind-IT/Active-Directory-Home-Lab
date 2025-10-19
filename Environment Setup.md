@@ -1,9 +1,11 @@
 # Environment setup
+***
 This is a small single-domain Active Directory (AD) environment build using VMware and pfSense. Currently, it's a simple setup, but  it can be expanded in the future to make a more complex environment. This runs on its own network, with DHCP and DNS managed by the domain controller. Most of the configuration is done using PowerShell, specifically PowerShell Core, both as a way to practice scripting and to enable efficient deployment of the environment.
 
 ![Active Directory Topology](./docs/environment_diagram.png)
 
-The virtual environment will host the following machines:
+## Technical requirements
+This virtual environment will host the following machines:
 
 | Role               | Hostname | OS                  | IP Address  | Description                                          |
 | ------------------ | -------- | ------------------- | ----------- | ---------------------------------------------------- |
@@ -33,7 +35,11 @@ $Params = @{
     Force                         = $true
 }
 Install-ADDSForest @Params
+
+Restart-Computer
 ```
+
+These changes will take effect after a restart.
 
 ## Networking
 Now we will configure the network settings. Remember to adjust the address space to match the network configuration of your router.
