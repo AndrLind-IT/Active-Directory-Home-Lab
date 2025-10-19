@@ -105,7 +105,7 @@ Dev.local
 │   
 └── Servers
 ```
-Lets make some OU's based on the tree structure above. 
+Lets make some OUs based on the tree structure above. 
 ```powershell
 # Variables 
 $pathmgt      =   'OU=AllUsers,DC=dev,DC=local'
@@ -177,6 +177,11 @@ foreach($user in $Users) {
 		-ChangePasswordAtLogon $True
 }
 ```
+
+We can now locate these users and their respective OUs in the Server Manager, unders 'Tools' -> 'Active Directory Users and Computers'.
+![Users and Computers](./docs/users.png)
+
+
 ## Computers
 *(Coming soon)*
 
