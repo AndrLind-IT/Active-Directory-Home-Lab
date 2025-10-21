@@ -41,7 +41,12 @@ Restart-Computer
 These changes will take effect after a restart.
 
 ## Networking
-Now we will configure the network settings. Remember to adjust the address space to match the network configuration of your router.
+Now we will configure the network settings with the following:
+- DC1 will get a static IP-address. This address will be the second address in the address range.
+- The pfSense router will become the default gateway.
+- DC1 will get two DNS servers, one of them being itself and the other the pfSense router.
+
+Remember to adjust the address space to match the network configuration of your router.
 
 ```powershell
 Get-NetIPConfiguration
@@ -49,15 +54,26 @@ Get-NetIPConfiguration
 $Index = '<InterfaceIndex>'
 $DefaultGateway = '192.168.2.1'
 $DCIP = '192.168.2.2'
+$Prefix = '24'
 
-New-NetIPAddress -InterfaceIndex $Index -IPAddress $DCIP -PrefixLength 24 -DefaultGateway $DefaultGateway
+New-NetIPAddress -InterfaceIndex $Index -IPAddress $DCIP -PrefixLength $Prefix -DefaultGateway $DefaultGateway
 Set-DnsClientServerAddress -InterfaceIndex 4 -ServerAddresses $DCIP, $DefaultGateway
 ```
 
 If done correctly, we should be able to ping 'google.com', indicating that we have internet connectivity and that DNS resolution is working.
 
-*(Coming soon)*
-- DHCP configurations
+![Internet connectivity](./docs/ipconfig.png)
+
+Now we will create a DHCP scope with a pool between '192.168.2.3' and '192.168.2.254'.
+```powershell
+Add-DhcpServerv4Scope -Name 'Scope1' -StartRange '192.168.2.3' -EndRange '192.168.2.254' -SubnetMask '255.255.255.0' -State Active
+
+Get-DhcpServerv4Scope
+# Add the 'ScopeId' to the 'ID' variable
+$ID = '<ScopeId>'
+
+Set-DhcpServerv4OptionValue -ScopeID $ID -DnsServer '192.168.1.2', '192.168.1.1' -DnsDomain 'dev.local' -Router '192.168.1.1' -Force
+```
 
 ## PowerShell Core
 Now that we have internet connectivity we will install **PowerShell Core**.
