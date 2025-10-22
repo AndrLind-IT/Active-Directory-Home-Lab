@@ -30,6 +30,8 @@ Rename-Computer -NewName "DC1" -Force -PassThru
 To install VMware Tools, open the settings for the guest operating system in VMware. Under CD/DVD (SATA), set the ISO image file to the equivalent one located in the VMware installation directory (on Windows: C:\Program Files\VMware\VMware Workstation). Once mounted, you can install VMware Tools from the CD-ROM drive in 'This PC' or 'My Computer'.
 ![VMware tools installer](./docs/vmware_tools.png)
 
+After installing VMware tools and restarting the computer, copy paste between the host and guest OS should now be possible.
+
 ## Domain controller
 Here we will install **Active Directory Domain Services (AD DS)** on our Windows Server, assigning it the role of **Domain Controller** for this domain. We will also install the DNS and DHCP services before creating our Active Directory forest.
 
@@ -48,11 +50,12 @@ $Params = @{
     Force                         = $true
 }
 Install-ADDSForest @Params
-
 Restart-Computer
 ```
 
 These changes will take effect after a restart.
+
+For this lab, I used the 'dev.local' domain name to represent a small software development company. After restarting the computer, the domain should be created and ready for use.
 
 ## Networking
 Now we will configure some network settings:
@@ -212,10 +215,10 @@ We can now locate these users and their respective OUs in the Server Manager uti
 ![Users and Computers](./docs/users.png)
 
 ## Computer
-In the Windows 10 virtual machine, the network should be automatically configured on first boot if DHCP is set up correctly. The DHCP lease should also be visible in the DHCP management console.
+In the Windows 10 virtual machine, the network should be automatically configured on first boot if DHCP is set up correctly. The IP-address lease should also be visible in the DHCP management console on DC1.
 ![DHCP Microsoft Management Console](./docs/address_lease.png)
 
-We should also be able to 'ping' DC1 from CL1 using it's domain name.
+Additonally, we should also be able to 'ping' DC1 from CL1 using it's domain name if the DC1 DNS server is working correctly.
 ![DNS working](./docs/dc1_ping.png)
 
 If these things don't work, verify that the network settings are correct.
@@ -224,7 +227,7 @@ Next, we’ll change the hostname and install VMware Tools before restarting the
 ```powershell
 Rename-Computer -NewName "DC1" -Force -PassThru
 ```
-After restart we’ll join CL1 to the domain. This command will require admin credentials.
+After restart we’ll join CL1 to the domain. These command will require admin credentials and a computer restart.
 
 ```powershell
 # Run as administrator in PowerShell (not PowerShell Core)
