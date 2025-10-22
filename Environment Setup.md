@@ -206,8 +206,20 @@ foreach($user in $Users) {
 We can now locate these users and their respective OUs in the Server Manager utility, under 'Tools' -> 'Active Directory Users and Computers'.
 ![Users and Computers](./docs/users.png)
 
-## Computers
-*(Coming soon)*
+## Computer
+In the Windows 10 virtual machine, the network should be automatically configured on first boot if DHCP is set up correctly. If the network is not configured, verify that the DHCP settings are correct.
+
+Next, we’ll change the hostname and install VMware Tools before restarting the computer, just as we did previously.
+```powershell
+Rename-Computer -NewName "DC1" -Force -PassThru
+```
+After restart we’ll join CL1 to the domain. This command will require admin credentials.
+
+```powershell
+# Run as administrator in PowerShell (not PowerShell Core)
+$cred = Get-Credential -UserName 'DEV\Administrator' -Message 'Admin credentials'
+Add-Computer -Credential $cred -DomainName 'dev.local' -PassThru -Verbose
+```
 
 ## Know Issues and Future Plans
 - Add Manager VM and set up remoting.
