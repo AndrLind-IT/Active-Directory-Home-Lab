@@ -15,12 +15,21 @@ My environment was created using VMware Workstation. Internet connectivity is es
 
 ![Bridged networking in VMware](./docs/vmware_bridge.png)
 
+### VMware tools
+In order to copy paste PowerShell code between the host machine and the VMs, we need to install VMware tools **from inside each guest OS**. Since installing VMware Tools requires a reboot, we’ll also change the computer’s hostname now, as that change also triggers a restart.
+
+```powershell
+Rename-Computer -NewName "DC1" -Force -PassThru
+```
+
+To install VMware Tools, open the settings for the guest operating system in VMware. Under CD/DVD (SATA), set the ISO image file to the equivalent one located in the VMware installation directory (on Windows: C:\Program Files\VMware\VMware Workstation). Once mounted, you can install VMware Tools from the CD-ROM drive in 'This PC' or 'My Computer'.
+![VMware tools installer](./docs/vmware_tools.png)
+
 ## Domain controller
 Here we will install Active Directory Domain Services (AD DS) on our Windows Server, assigning it the role of Domain Controller for this domain. We will also install the DNS and DHCP services before creating our Active Directory forest.
 
 ```powershell
 # Run as administrator
-Rename-Computer -NewName "DC1" -Force -PassThru
 Install-WindowsFeature AD-Domain-Services, DHCP, DNS -IncludeManagementTools
 
 $Password = Read-Host -Prompt 'Create admin password' -AsSecureString
