@@ -11,7 +11,7 @@ This virtual environment will host the following machines:
 | Domain Controller  | DC1      | Windows Server 2022 | 192.168.2.2 | Hosts Active Directory Domain Services, DNS and DHCP |
 | Client Workstation | CL1      | Windows 10 Pro      | (DHCP)      | Joined to the AD domain                              |
 
-My environment was created using VMware Workstation, but it doesn't depend on any VMware-speficif features. I will use VMware tools, but only to allow copy paste between my host and guest OS. Internet connectivity is established through a bridged connection to a pfSense router.
+My environment was created using VMware Workstation, but it doesn't depend on any VMware-speficif features. I will use VMware tools, but only to allow copy paste between my host and guest OS.
 
 As this lab will be running some networking services, we need to isolate it from the home network. This prevents the DHCP service on the domain controller from conflicting with the DHCP service on the ISP router, and ensures that networking services from the lab environment doesn't effect the home network.
 
@@ -233,7 +233,7 @@ Add-Computer -Credential $cred -DomainName 'dev.local' -OUPath 'OU=IT,OU=AllUser
 Restart-Computer
 ```
 
-
+If done correctly, CL1 should now be listed in it's OU in 'Tools' -> 'Active Directory Users and Computers'.
 
 ## Know Issues and Future Plans
 - Add Manager VM and set up remoting.
