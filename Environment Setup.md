@@ -11,12 +11,17 @@ This virtual environment will host the following machines:
 | Domain Controller  | DC1      | Windows Server 2022 | 192.168.2.2 | Hosts Active Directory Domain Services, DNS and DHCP |
 | Client Workstation | CL1      | Windows 10 Pro      | (DHCP)      | Joined to the AD domain                              |
 
-My environment was created using VMware Workstation. Internet connectivity is established through a bridged connection to a pfSense router.
+My environment was created using VMware Workstation, but it doesn't depend on any VMware-speficif features. I will use VMware tools, but only to allow copy paste between my host and guest OS. Internet connectivity is established through a bridged connection to a pfSense router.
 
+As this lab will be running some networking services, we need to isolate it from the home network. This prevents the DHCP service on the domain controller from conflicting with the DHCP service on the ISP router, and ensures that networking services from the lab environment doesn't effect the home network.
+
+To solve this we’ll need a seperate router to create a new network. I'm using a pfSense Netgate router, but any physical or virtual router that's configurable can be used for the same purpose.
+
+The lab will also use a **bridged connection** to the router, allowing it to access the internet while remaining isolated within it’s own network.
 ![Bridged networking in VMware](./docs/vmware_bridge.png)
 
-### VMware tools
-In order to copy paste PowerShell code between the host machine and the VMs, we need to install VMware tools **from inside each guest OS**. Since installing VMware Tools requires a reboot, we’ll also change the computer’s hostname now, as that change also triggers a restart.
+## VMware tools
+In order to copy paste PowerShell code between the host machine and the VMs, we need to install **VMware tools** from inside each guest OS. Since installing VMware Tools requires a reboot, we’ll also change the computer’s hostname now, as that change also triggers a restart. This will be the first thing we do in the lab:
 
 ```powershell
 Rename-Computer -NewName "DC1" -Force -PassThru
@@ -26,7 +31,7 @@ To install VMware Tools, open the settings for the guest operating system in VMw
 ![VMware tools installer](./docs/vmware_tools.png)
 
 ## Domain controller
-Here we will install Active Directory Domain Services (AD DS) on our Windows Server, assigning it the role of Domain Controller for this domain. We will also install the DNS and DHCP services before creating our Active Directory forest.
+Here we will install **Active Directory Domain Services (AD DS)** on our Windows Server, assigning it the role of **Domain Controller** for this domain. We will also install the DNS and DHCP services before creating our Active Directory forest.
 
 ```powershell
 # Run as administrator
@@ -74,7 +79,7 @@ If done correctly, we should be able to ping 'google.com', indicating that we ha
 
 ![Internet connectivity](./docs/ipconfig.png)
 
-Now we will create a DHCP scope with a pool between '192.168.2.3' and '192.168.2.254', and add a default gateway and DNS server to the pool.
+Now we will create a DHCP scope with a pool between '192.168.2.3' and '192.168.2.254', and add the default gateway and DNS server to the pool.
 ```powershell
 Add-DhcpServerv4Scope -Name 'Scope1' -StartRange '192.168.2.3' -EndRange '192.168.2.254' -SubnetMask '255.255.255.0' -State Active
 
@@ -207,7 +212,13 @@ We can now locate these users and their respective OUs in the Server Manager uti
 ![Users and Computers](./docs/users.png)
 
 ## Computer
-In the Windows 10 virtual machine, the network should be automatically configured on first boot if DHCP is set up correctly. If the network is not configured, verify that the DHCP settings are correct.
+In the Windows 10 virtual machine, the network should be automatically configured on first boot if DHCP is set up correctly. The DHCP lease should also be visible in the DHCP management console.
+![DHCP Microsoft Management Console](./docs/address_lease.png)
+
+We should also be able to 'ping' DC1 from CL1 using it's domain name.
+![DNS working](./docs/dc1_ping.png)
+
+If these things don't work, verify that the network settings are correct.
 
 Next, we’ll change the hostname and install VMware Tools before restarting the computer, just as we did previously.
 ```powershell
@@ -218,8 +229,11 @@ After restart we’ll join CL1 to the domain. This command will require admin cr
 ```powershell
 # Run as administrator in PowerShell (not PowerShell Core)
 $cred = Get-Credential -UserName 'DEV\Administrator' -Message 'Admin credentials'
-Add-Computer -Credential $cred -DomainName 'dev.local' -PassThru -Verbose
+Add-Computer -Credential $cred -DomainName 'dev.local' -OUPath 'OU=IT,OU=AllUsers,DC=dev,DC=local' -PassThru -Verbose
+Restart-Computer
 ```
+
+
 
 ## Know Issues and Future Plans
 - Add Manager VM and set up remoting.
