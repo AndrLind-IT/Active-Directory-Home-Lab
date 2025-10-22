@@ -234,6 +234,7 @@ Restart-Computer
 ```
 
 If done correctly, CL1 should now be listed in it's OU in 'Tools' -> 'Active Directory Users and Computers'.
+![CL1 joined to domain](./docs/CL1_joined.png)
 
 ## Know Issues and Future Plans
 - Add Manager VM and set up remoting.
