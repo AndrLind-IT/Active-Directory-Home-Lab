@@ -11,7 +11,7 @@ This virtual environment will host the following machines:
 | Domain Controller  | DC1      | Windows Server 2022 | 192.168.2.2 | Hosts Active Directory Domain Services, DNS and DHCP |
 | Client Workstation | CL1      | Windows 10 Pro      | (DHCP)      | Joined to the AD domain                              |
 
-My environment was created using VMware Workstation, but it doesn't depend on any VMware-speficif features. I will use VMware tools, but only to allow copy paste between my host and guest OS.
+My environment was created using VMware Workstation, but it doesn't depend on any VMware-specific features. I will use VMware tools, but only to allow copy paste between my host and guest OS.
 
 As this lab will be running some networking services, we need to isolate it from the home network. This prevents the DHCP service on the domain controller from conflicting with the DHCP service on the ISP router, and ensures that networking services from the lab environment doesn't effect the home network.
 
@@ -21,10 +21,10 @@ The lab will also use a **bridged connection** to the router, allowing it to acc
 ![Bridged networking in VMware](./docs/vmware_bridge.png)
 
 ## VMware tools
-In order to copy paste PowerShell code between the host machine and the VMs, we need to install **VMware tools** from inside each guest OS. Since installing VMware Tools requires a reboot, we’ll also change the computer’s hostname now, as that change also triggers a restart. This will be the first thing we do in the lab:
+In order to copy paste PowerShell code between the host machine and the VMs, we need to install **VMware tools** from inside each guest OS. Since installing VMware Tools requires a reboot, we’ll also change the computer’s hostname now, as that change also requires a restart. This will be the first thing we do in the lab:
 
 ```powershell
-Rename-Computer -NewName "DC1" -Force -PassThru
+Rename-Computer -NewName 'DC1' -Force -PassThru
 ```
 
 To install VMware Tools, open the settings for the guest operating system in VMware. Under CD/DVD (SATA), set the ISO image file to the equivalent one located in the VMware installation directory (on Windows: C:\Program Files\VMware\VMware Workstation). Once mounted, you can install VMware Tools from the CD-ROM drive in 'This PC' or 'My Computer'.
@@ -68,14 +68,14 @@ Remember to adjust the address space to match the network configuration of your 
 ```powershell
 Get-NetIPConfiguration
 # Find the 'InterfaceIndex' value and add it to the '$Index' variable
-$Index = '<InterfaceIndex>'
-$DefaultGateway = '192.168.2.1'
-$DCIP = '192.168.2.2'
+$Index  = '<InterfaceIndex>'
+$Router = '192.168.2.1'
+$DC1    = '192.168.2.2'
 $Prefix = '24'
 
-New-NetIPAddress -InterfaceIndex $Index -IPAddress $DCIP -PrefixLength $Prefix -DefaultGateway $DefaultGateway
-Set-DnsClientServerAddress -InterfaceIndex $Index -ServerAddresses $DCIP
-Add-DnsServerForwarder -IPAddress $DefaultGateway
+New-NetIPAddress -InterfaceIndex $Index -IPAddress $DC1 -PrefixLength $Prefix -DefaultGateway $Router
+Set-DnsClientServerAddress -InterfaceIndex $Index -ServerAddresses $DC1
+Add-DnsServerForwarder -IPAddress $Router
 ```
 
 If done correctly, we should be able to ping 'google.com', indicating that we have internet connectivity and that DNS resolution is working.
@@ -84,13 +84,27 @@ If done correctly, we should be able to ping 'google.com', indicating that we ha
 
 Now we will create a DHCP scope with a pool between '192.168.2.3' and '192.168.2.254', and add the default gateway and DNS server to the pool.
 ```powershell
-Add-DhcpServerv4Scope -Name 'Scope1' -StartRange '192.168.2.3' -EndRange '192.168.2.254' -SubnetMask '255.255.255.0' -State Active
+# Creates DHCP pool
+Add-DhcpServerv4Scope `
+	-Name       'Scope1' `
+	-StartRange '192.168.2.3' `
+	-EndRange   '192.168.2.254' `
+	-SubnetMask '255.255.255.0' `
+	-State       Active
 
 Get-DhcpServerv4Scope
 # Add the 'ScopeId' to the 'ID' variable
 $ID = '<ScopeId>'
 
-Set-DhcpServerv4OptionValue -ScopeID $ID -DnsServer '192.168.2.2' -DnsDomain 'dev.local' -Router '192.168.2.1' -Force
+# Configures DHCP pool
+Set-DhcpServerv4OptionValue `
+	-ScopeID   $ID `
+	-DnsServer '192.168.2.2' `
+	-DnsDomain 'dev.local' `
+	-Router    '192.168.2.1' `
+	-Force
+
+# Authorizes the DHCP service
 Add-DhcpServerInDC -DnsName 'DC1.dev.local' -IPAddress '192.168.2.2'
 ```
 
