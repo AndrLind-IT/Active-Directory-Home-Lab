@@ -1,5 +1,5 @@
-# Environment setup
-This is a small single-domain Active Directory (AD) environment build using VMware and pfSense. Currently, it's a simple setup, but  it can be expanded in the future to make a more complex environment. This runs on its own network, with DHCP and DNS managed by the domain controller. Most of the configuration is done using PowerShell, specifically PowerShell Core, both as a way to practice scripting and to enable efficient deployment of the environment.
+# 01. Environment setup
+This is a small single-domain Active Directory (AD) environment built using VMware and pfSense. Currently, it's a simple setup, but  it can be expanded in the future to make a more complex environment. This runs on its own network, with DHCP and DNS managed by the domain controller. Most of the configuration is done using PowerShell, specifically PowerShell Core, both as a way to practice scripting and to enable efficient deployment of the environment.
 
 ![Active Directory Topology](./docs/environment_diagram.png)
 
@@ -15,13 +15,13 @@ My environment was created using VMware Workstation, but it doesn't depend on an
 
 As this lab will be running some networking services, we need to isolate it from the home network. This prevents the DHCP service on the domain controller from conflicting with the DHCP service on the ISP router, and ensures that networking services from the lab environment doesn't effect the home network.
 
-To solve this we’ll need a seperate router to create a new network. I'm using a pfSense Netgate router, but any physical or virtual router that's configurable can be used for the same purpose.
+To solve this we'll need a seperate router to create a new network. I'm using a pfSense Netgate router, but any physical or virtual router that's configurable can be used for the same purpose.
 
-The lab will also use a **bridged connection** to the router, allowing it to access the internet while remaining isolated within it’s own network.
+The lab will also use a **bridged connection** to the router, allowing it to access the internet while remaining isolated within it's own network.
 ![Bridged networking in VMware](./docs/vmware_bridge.png)
 
 ## VMware tools
-In order to copy paste PowerShell code between the host machine and the VMs, we need to install **VMware tools** from inside each guest OS. Since installing VMware Tools requires a reboot, we’ll also change the computer’s hostname now, as that change also requires a restart. This will be the first thing we do in the lab:
+In order to copy paste PowerShell code between the host machine and the VMs, we need to install **VMware tools** from inside each guest OS. Since installing VMware Tools requires a reboot, we'll also change the computer's hostname now, as that change also requires a restart. This will be the first thing we do in the lab:
 
 ```powershell
 Rename-Computer -NewName 'DC1' -Force -PassThru
@@ -32,7 +32,7 @@ To install VMware Tools, open the settings for the guest operating system in VMw
 
 After installing VMware tools and restarting the computer, copy paste between the host and guest OS should now be possible.
 
-## Domain controller
+## Creating the Windows domain
 Here we will install **Active Directory Domain Services (AD DS)** on our Windows Server, assigning it the role of **Domain Controller** for this domain. We will also install the DNS and DHCP services before creating our Active Directory forest.
 
 ```powershell
@@ -57,7 +57,7 @@ These changes will take effect after a restart.
 
 For this lab, I used the 'dev.local' domain name to represent a small software development company. After restarting the computer, the domain should be created and ready for use.
 
-## Networking
+## Network configurations
 Now we will configure some network settings:
 - DC1 will get the static IP-address '192.168.2.2', the second address in the subnet.
 - The pfSense router will become the default gateway.
@@ -121,7 +121,7 @@ exit
 
 All remaining PowerShell commands should be run on this version, unless specified otherwise.
 
-## Organizational Units (OUs)
+## Creating Organizational Units (OUs)
 When new users and computers are added in Active Directory, they are placed in the default **Users** and **Computers** containers, unless specified otherwise. Since these default containers cannot have **Group Policy Objects (GPOs)** linked to them, they are considered less secure. To address this, users and computers should be placed in **Organizational Units (OUs)** instead.
 
 Organizational Units should be structured to facilitate two things:
@@ -194,8 +194,8 @@ New-ADOrganizationalUnit 'IT' -Description 'IT workstations' -Path $pathclit
 New-ADOrganizationalUnit 'Servers ' -Description 'Contains OUs and servers'
 ```
 
-## Users
-The following will add some users from a cvs file. This file was made manually using some common first- and last names, and assigning them to some departments and OUs. For that reason the amount of users is rather small. In the future I might add a larger and more complex csv file.
+## Adding users
+The following will add some users from a csv file. This file was made manually using some common first- and last names, and assigning them to some departments and OUs. For that reason the amount of users is rather small. In the future I might add a larger and more complex csv file.
 
 These users will also be assigned a complex password that's generated on user creation.
 
@@ -228,7 +228,7 @@ foreach($user in $Users) {
 We can now locate these users and their respective OUs in the Server Manager utility, under 'Tools' -> 'Active Directory Users and Computers'.
 ![Users and Computers](./docs/users.png)
 
-## Computer
+## Joining computers
 In the Windows 10 virtual machine, the network should be automatically configured on first boot if DHCP is set up correctly. The IP-address lease should also be visible in the DHCP management console on DC1.
 ![DHCP Microsoft Management Console](./docs/address_lease.png)
 
@@ -237,11 +237,11 @@ Additonally, we should also be able to 'ping' DC1 from CL1 using it's domain nam
 
 If these things don't work, verify that the network settings are correct.
 
-Next, we’ll change the hostname and install VMware Tools before restarting the computer, just as we did previously.
+Next, we'll change the hostname and install VMware Tools before restarting the computer, just as we did previously.
 ```powershell
 Rename-Computer -NewName "DC1" -Force -PassThru
 ```
-After restart we’ll join CL1 to the domain. These command will require admin credentials and a computer restart.
+After restart we'll join CL1 to the domain. These command will require admin credentials and a computer restart.
 
 ```powershell
 # Run as administrator in PowerShell (not PowerShell Core)
@@ -253,6 +253,4 @@ Restart-Computer
 If done correctly, CL1 should now be listed in it's OU in 'Tools' -> 'Active Directory Users and Computers'.
 ![CL1 joined to domain](./docs/CL1_joined.png)
 
-## Know Issues and Future Plans
-- Add Manager VM and set up remoting.
-- Create file share and do AGDLP access control
+We've now added some users, organizational units (OUs), and computers to the lab environment. From here, we're free to create additional objects and to explore how Active Directory functions within this basic lab setup.
